@@ -25,13 +25,19 @@
     padding: 16px; border-radius: 12px; margin-top: 12px;
   }
   .download-btn:active { background: #2d63a8; }
-  .meta { font-size: 13px; color: #64748b; margin-top: 8px; }
+  .ver-line { font-size: 13px; color: #94a3b8; }
+  .update-label { font-size: 12px; color: #3d7fcc; font-weight: 700; margin-top: 12px; }
+  .update-desc {
+    font-size: 15px; color: #1e293b; font-weight: 600; line-height: 1.5;
+    margin-top: 4px; padding: 10px 12px; background: #f0f5fa; border-radius: 10px;
+  }
   .note { font-size: 12px; color: #94a3b8; margin-top: 16px; line-height: 1.6; }
   h2 { font-size: 15px; color: #475569; margin: 24px 0 8px; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   td { padding: 8px 4px; border-bottom: 1px solid #eef1f5; }
   td.date { color: #94a3b8; white-space: nowrap; }
-  a.build-link { color: #3d7fcc; text-decoration: none; }
+  td.msg { color: #1e293b; }
+  a.build-link { color: #3d7fcc; text-decoration: none; white-space: nowrap; }
   #empty { color: #94a3b8; font-size: 13px; }
 </style>
 </head>
@@ -57,6 +63,13 @@
   </div>
 
   <script>
+    // 커밋 메시지를 그대로 innerHTML에 넣으면 <,>,& 같은 문자가 깨질 수 있어 이스케이프.
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+      }[c]));
+    }
+
     fetch('builds.json?_=' + Date.now())
       .then(r => r.json())
       .then(builds => {
@@ -66,15 +79,17 @@
         if (builds.length === 0) return;
 
         const latest = builds[builds.length - 1];
-        cur.innerHTML = `<strong>#${latest.run}</strong> · ${latest.date}` +
-          (latest.message ? `<div class="meta">${latest.message}</div>` : '');
+        cur.innerHTML = `<div class="ver-line">#${esc(latest.run)} · ${esc(latest.date)}</div>` +
+          (latest.message
+            ? `<div class="update-label">이번 업데이트에서 달라진 점</div><div class="update-desc">${esc(latest.message)}</div>`
+            : '');
 
         empty.style.display = 'none';
         [...builds].reverse().forEach(b => {
           const tr = document.createElement('tr');
-          tr.innerHTML = `<td class="date">${b.date}</td>` +
-            `<td>#${b.run} ${b.message || ''}</td>` +
-            `<td><a class="build-link" href="archive/${b.run}.apk">받기</a></td>`;
+          tr.innerHTML = `<td class="date">${esc(b.date)}</td>` +
+            `<td class="msg">#${esc(b.run)} ${esc(b.message) || '<span style="color:#cbd5e1">(설명 없음)</span>'}</td>` +
+            `<td><a class="build-link" href="archive/${esc(b.run)}.apk">받기</a></td>`;
           body.appendChild(tr);
         });
       })

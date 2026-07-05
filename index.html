@@ -87,9 +87,9 @@
         empty.style.display = 'none';
         [...builds].reverse().forEach(b => {
           const tr = document.createElement('tr');
+          // 과거 빌드는 변경 이력만 — 개별 다운로드 링크 제거(설치는 항상 위 '최신 버전'만, 2026-07-05).
           tr.innerHTML = `<td class="date">${esc(b.date)}</td>` +
-            `<td class="msg">#${esc(b.run)} ${esc(b.message) || '<span style="color:#cbd5e1">(설명 없음)</span>'}</td>` +
-            `<td><a class="build-link" href="archive/${esc(b.run)}.apk">받기</a></td>`;
+            `<td class="msg">#${esc(b.run)} ${esc(b.message) || '<span style="color:#cbd5e1">(설명 없음)</span>'}</td>`;
           body.appendChild(tr);
         });
       })
